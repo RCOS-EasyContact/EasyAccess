@@ -6,7 +6,7 @@
 void runService_Squid(void) {
   // Start Squid Proxy Server
   printf("\033[0;32m%s\033[0m%s\n", "INFO: ", "Starting Squid Proxy Server");
-  system("service squid start");
+  system("rm -rf /var/spool/squid && service squid start");
 }
 
 void runService_OpenConnect(void) {
@@ -45,7 +45,7 @@ void runService_OpenConnect(void) {
 void runService_VPNKeepAlive(void) {
   // Allocate Space for Variables
   char *ENV_VPN_KEEPALIVE = NULL;
-  unsigned int VPN_KEEPALIVE = 300;
+  unsigned int VPN_KEEPALIVE = 120;
   unsigned int USR_KEEPALIVE = 0;
 
   // Get Interval from Environment

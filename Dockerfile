@@ -26,7 +26,7 @@ EXPOSE 3128/tcp
 
 ENV RPI_RCSID=REPLACE_ME \
     RPI_PASSWORD=REPLACE_ME \
-    VPN_KEEPALIVE=600
+    VPN_KEEPALIVE=300
 
 COPY --from=0 /Init.out /usr/bin/init
 
