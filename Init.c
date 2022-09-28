@@ -6,7 +6,7 @@
 void runService_Squid(void) {
   // Start Squid Proxy Server
   printf("\033[0;32m%s\033[0m%s\n", "INFO: ", "Starting Squid Proxy Server");
-  system("rm -rf /var/spool/squid && service squid start");
+  system("squid");
 }
 
 void runService_OpenConnect(void) {
@@ -39,7 +39,7 @@ void runService_OpenConnect(void) {
 
   // Start OpenConnect
   printf("\033[0;32m%s\033[0m%s\n", "INFO: ", "Starting OpenConnect");
-  system("/.LaunchOpenConnect.sh");
+  system("/bin/bash /.LaunchOpenConnect.sh");
 }
 
 void runService_VPNKeepAlive(void) {
@@ -75,16 +75,18 @@ void runService_VPNKeepAlive(void) {
 
 int main(void) {
   // Refuse to Start as Non-Pid=1 Program
-  if (getpid() != 1) {
-    printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Must be Run as PID 1");
-    exit(EXIT_FAILURE);
-  }
+  // if (getpid() != 1) {
+  //   printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Must be Run as PID 1");
+  //   exit(EXIT_FAILURE);
+  // }
 
-  runService_Squid();
+  // runService_Squid();
 
-  runService_OpenConnect();
+  // runService_OpenConnect();
 
-  runService_VPNKeepAlive();
+  // runService_VPNKeepAlive();
+
+execv("/bin/sh",NULL);
 
   return EXIT_SUCCESS;
 }

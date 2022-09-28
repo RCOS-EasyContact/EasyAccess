@@ -1,26 +1,19 @@
-FROM ubuntu:jammy
+FROM alpine:3
 
-RUN apt update \
- && apt upgrade -y \
- && apt install -y clang
+RUN apk add --no-cache build-base
 
 COPY Init.c Init.c
 
-RUN clang -o Init.out -Ofast Init.c
+RUN gcc -o Init.out -Ofast Init.c
 
-FROM ubuntu:jammy
+FROM alpine:3
 
-RUN apt update \
- && apt upgrade -y \
- && apt install -y openconnect \
- && apt install -y squid \
- && apt install -y iputils-ping \
- && apt clean
+RUN apk add --no-cache openconnect \
+ && apk add --no-cache squid
 
-RUN rm /etc/squid/squid.conf \
- && touch /etc/squid/squid.conf \
- && echo "http_port 3128" | tee -a /etc/squid/squid.conf \
- && echo "http_access allow all" | tee -a /etc/squid/squid.conf
+COPY squid.conf /etc/squid/squid.conf
+
+RUN squid -z
 
 EXPOSE 3128/tcp
 
@@ -28,8 +21,8 @@ ENV RPI_RCSID=REPLACE_ME \
     RPI_PASSWORD=REPLACE_ME \
     VPN_KEEPALIVE=300
 
-COPY --from=0 /Init.out /usr/bin/init
+COPY --from=0 /Init.out /sbin/init
 
 COPY LaunchOpenConnect.sh /.LaunchOpenConnect.sh
 
-ENTRYPOINT ["/usr/bin/init"]
+ENTRYPOINT ["/sbin/init"]
