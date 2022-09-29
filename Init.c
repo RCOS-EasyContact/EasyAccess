@@ -11,32 +11,34 @@ void runService_Squid(void) {
   // Start Squid Proxy Server
   printf("\033[0;32m%s\033[0m%s\n", "INFO: ", "Starting Squid Proxy Server");
 
-  pid_t createCache = fork();
-  if (unlikely(createCache == -1)) {
+  pid_t pidSquidCache = fork();
+  if (unlikely(pidSquidCache == -1)) {
     printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Failed to Fork");
     exit(EXIT_FAILURE);
-  } else if (createCache == 0) {
+  } else if (pidSquidCache == 0) {
     fclose(stdin);
     freopen("/dev/null", "w", stdout);
+    freopen("/dev/null", "w", stderr);
     execl("/usr/sbin/squid", "squid", "-z", NULL);
     exit(EXIT_FAILURE);
   }
-  waitpid(createCache, NULL, 0);
+  waitpid(pidSquidCache, NULL, 0);
   while (access("/var/run/squid.pid", F_OK) == 0) {
     sleep(1);
   }
 
-  pid_t runSquid = fork();
-  if (unlikely(runSquid == -1)) {
+  pid_t pidSquid = fork();
+  if (unlikely(pidSquid == -1)) {
     printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Failed to Fork");
     exit(EXIT_FAILURE);
-  } else if (runSquid == 0) {
+  } else if (pidSquid == 0) {
     fclose(stdin);
     freopen("/dev/null", "w", stdout);
+    freopen("/dev/null", "w", stderr);
     execl("/usr/sbin/squid", "squid", NULL);
     exit(EXIT_FAILURE);
   }
-  waitpid(runSquid, NULL, 0);
+  waitpid(pidSquid, NULL, 0);
 }
 
 void runService_OpenConnect(void) {
@@ -69,7 +71,26 @@ void runService_OpenConnect(void) {
 
   // Start OpenConnect
   printf("\033[0;32m%s\033[0m%s\n", "INFO: ", "Starting OpenConnect");
-  system("/bin/bash /.LaunchOpenConnect.sh");
+  int pipeDescriptor[2] = {};
+  if (pipe(pipeDescriptor) == -1) {
+    printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Failed to Create Pipe");
+    exit(EXIT_FAILURE);
+  }
+  pid_t pidOpenConnect = fork();
+  if (unlikely(pidOpenConnect == -1)) {
+    printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Failed to Fork");
+    exit(EXIT_FAILURE);
+  } else if (pidOpenConnect == 0) {
+    close(pipeDescriptor[1]);
+    dup2(pipeDescriptor[0], 0);
+    freopen("/dev/null", "w", stdout);
+    freopen("/dev/null", "w", stderr);
+    execl("/usr/bin/openconnect", "openconnect", "vpn.stu.rpi.edu", "--quiet",
+          NULL);
+  }
+  close(pipeDescriptor[0]);
+  dprintf(pipeDescriptor[1], "%s\n%s\npush\n", RPI_RCSID, RPI_PASSWORD);
+  close(pipeDescriptor[1]);
 }
 
 void runService_VPNKeepAlive(void) {
@@ -98,13 +119,17 @@ void runService_VPNKeepAlive(void) {
          "INFO: ", "Starting Keep Alive Service with Interval of ",
          VPN_KEEPALIVE, " Seconds");
   while (1) {
-    pid_t i = fork();
-    if (i == 0) {
+    pid_t pidKeepAlive = fork();
+    if (unlikely(pidKeepAlive == -1)) {
+      printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Failed to Fork");
+      exit(EXIT_FAILURE);
+    } else if (pidKeepAlive == 0) {
       fclose(stdin);
       freopen("/dev/null", "w", stdout);
       freopen("/dev/null", "w", stderr);
       execl("/bin/ping", "ping", "-c", "1", "roundcube.rpi.edu", NULL);
     }
+    waitpid(pidKeepAlive, NULL, 0);
     sleep(VPN_KEEPALIVE);
   }
 }
