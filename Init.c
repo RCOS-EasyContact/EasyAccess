@@ -10,6 +10,7 @@
 void runService_Squid(void) {
   // Start Squid Proxy Server
   printf("\033[0;32m%s\033[0m%s\n", "INFO: ", "Starting Squid Proxy Server");
+  fflush(stdout);
 
   pid_t pidSquidCache = fork();
   if (unlikely(pidSquidCache == -1)) {
@@ -71,6 +72,8 @@ void runService_OpenConnect(void) {
 
   // Start OpenConnect
   printf("\033[0;32m%s\033[0m%s\n", "INFO: ", "Starting OpenConnect");
+  fflush(stdout);
+
   int pipeDescriptor[2] = {};
   if (pipe(pipeDescriptor) == -1) {
     printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Failed to Create Pipe");
@@ -118,6 +121,8 @@ void runService_VPNKeepAlive(void) {
   printf("\033[0;32m%s\033[0m%s%u%s\n",
          "INFO: ", "Starting Keep Alive Service with Interval of ",
          VPN_KEEPALIVE, " Seconds");
+  fflush(stdout);
+
   while (1) {
     pid_t pidKeepAlive = fork();
     if (unlikely(pidKeepAlive == -1)) {
@@ -142,14 +147,11 @@ int main(void) {
   }
 
   runService_Squid();
+  waitpid(-1, NULL, 0); // Collect Terminated Squid Process
 
   runService_OpenConnect();
 
   runService_VPNKeepAlive();
-
-  while (1) {
-    pause();
-  }
 
   return EXIT_SUCCESS;
 }
