@@ -9,11 +9,8 @@ RUN gcc -o Init.out -Ofast Init.c
 FROM alpine:3
 
 RUN apk add --no-cache openconnect \
- && apk add --no-cache squid
-
-COPY squid.conf /etc/squid/squid.conf
-
-RUN squid -z
+ && apk add --no-cache squid \
+ && apk add --no-cache bash
 
 EXPOSE 3128/tcp
 
@@ -21,8 +18,10 @@ ENV RPI_RCSID=REPLACE_ME \
     RPI_PASSWORD=REPLACE_ME \
     VPN_KEEPALIVE=300
 
-COPY --from=0 /Init.out /sbin/init
+COPY squid.conf /etc/squid/squid.conf
+
+COPY --from=0 /Init.out /usr/bin/init
 
 COPY LaunchOpenConnect.sh /.LaunchOpenConnect.sh
 
-ENTRYPOINT ["/sbin/init"]
+ENTRYPOINT ["/usr/bin/init"]
