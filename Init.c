@@ -75,7 +75,7 @@ void runService_OpenConnect(void) {
   fflush(stdout);
 
   int pipeDescriptor[2] = {};
-  if (pipe(pipeDescriptor) == -1) {
+  if (unlikely(pipe(pipeDescriptor) == -1)) {
     printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Failed to Create Pipe");
     exit(EXIT_FAILURE);
   }
@@ -147,7 +147,6 @@ int main(void) {
   }
 
   runService_Squid();
-  waitpid(-1, NULL, 0); // Collect Terminated Squid Process
 
   runService_OpenConnect();
 

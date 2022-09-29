@@ -17,7 +17,7 @@ ENV RPI_RCSID=REPLACE_ME \
     RPI_PASSWORD=REPLACE_ME \
     VPN_KEEPALIVE=300
 
-COPY squid.conf /etc/squid/squid.conf
+COPY .FILES/squid.conf /etc/squid/squid.conf
 
 COPY --from=0 /Init.out /usr/bin/init
 
