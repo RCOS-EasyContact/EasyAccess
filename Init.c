@@ -128,7 +128,7 @@ void runService_VPNKeepAlive(void) {
     printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Failed to Fork");
     exit(EXIT_FAILURE);
   } else if (pidKeepAlive == 0) {
-    char STRING_VPN_KEEPALIVE[sizeof(unsigned int)] = {};
+    char STRING_VPN_KEEPALIVE[0xB] = {};
     sprintf(STRING_VPN_KEEPALIVE, "%u", VPN_KEEPALIVE);
     fclose(stdin);
     freopen("/dev/null", "w", stdout);
