@@ -6,7 +6,10 @@ RUN apk add --no-cache build-base
 
 COPY Init.c Init.c
 
-RUN gcc -o Init.out -Ofast Init.c
+COPY KeepAlive.c KeepAlive.c
+
+RUN gcc -o Init.out -Ofast Init.c \
+ && gcc -o KeepAlive.out -Ofast KeepAlive.c
 
 FROM alpine:3
 
@@ -20,6 +23,8 @@ ENV RPI_RCSID=REPLACE_ME \
 COPY .FILES/squid.conf /etc/squid/squid.conf
 
 COPY --from=0 /Init.out /usr/bin/init
+
+COPY --from=0 /KeepAlive.out /usr/bin/vpnKeepAlive
 
 HEALTHCHECK --interval=5m --timeout=30s --start-period=2m --retries=0 \
         CMD /usr/bin/rtHealthCheck

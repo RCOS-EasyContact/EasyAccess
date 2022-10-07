@@ -123,19 +123,17 @@ void runService_VPNKeepAlive(void) {
          VPN_KEEPALIVE, " Seconds");
   fflush(stdout);
 
-  while (1) {
-    pid_t pidKeepAlive = fork();
-    if (unlikely(pidKeepAlive == -1)) {
-      printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Failed to Fork");
-      exit(EXIT_FAILURE);
-    } else if (pidKeepAlive == 0) {
-      fclose(stdin);
-      freopen("/dev/null", "w", stdout);
-      freopen("/dev/null", "w", stderr);
-      execl("/bin/ping", "ping", "-c", "1", "roundcube.rpi.edu", NULL);
-    }
-    waitpid(pidKeepAlive, NULL, 0);
-    sleep(VPN_KEEPALIVE);
+  pid_t pidKeepAlive = fork();
+  if (unlikely(pidKeepAlive == -1)) {
+    printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Failed to Fork");
+    exit(EXIT_FAILURE);
+  } else if (pidKeepAlive == 0) {
+    char STRING_VPN_KEEPALIVE[0xB] = {};
+    sprintf(STRING_VPN_KEEPALIVE, "%u", VPN_KEEPALIVE);
+    fclose(stdin);
+    freopen("/dev/null", "w", stdout);
+    freopen("/dev/null", "w", stderr);
+    execl("/usr/bin/vpnKeepAlive", "vpnKeepAlive", STRING_VPN_KEEPALIVE, NULL);
   }
 }
 
@@ -151,6 +149,11 @@ int main(void) {
   runService_OpenConnect();
 
   runService_VPNKeepAlive();
+
+  // Collect Zombine Process
+  while (1) {
+    waitpid(-1, NULL, 0);
+  }
 
   return EXIT_SUCCESS;
 }
