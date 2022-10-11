@@ -1,7 +1,5 @@
 FROM alpine:3
 
-LABEL UPSTREAM="https://github.com/RCOS-EasyContact/EasyAccess"
-
 RUN apk add --no-cache build-base
 
 COPY Init.c Init.c
