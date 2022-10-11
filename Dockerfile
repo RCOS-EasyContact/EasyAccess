@@ -24,7 +24,7 @@ COPY --from=0 /Init.out /usr/bin/init
 
 COPY --from=0 /rtHealthCheck.out /usr/bin/rtHealthCheck
 
-HEALTHCHECK --interval=5m --timeout=30s --start-period=2m --retries=1 \
+HEALTHCHECK --interval=5m --timeout=30s --start-period=1m --retries=1 \
         CMD /usr/bin/rtHealthCheck || exit 1
 
 ENTRYPOINT ["/usr/bin/init"]
