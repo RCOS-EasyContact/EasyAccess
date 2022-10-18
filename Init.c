@@ -90,51 +90,11 @@ void runService_OpenConnect(void) {
     freopen("/dev/null", "w", stderr);
     execl("/usr/bin/openconnect", "openconnect", "vpn.stu.rpi.edu", "--quiet",
           NULL);
+    exit(EXIT_FAILURE);
   }
   close(pipeDescriptor[0]);
   dprintf(pipeDescriptor[1], "%s\n%s\npush\n", RPI_RCSID, RPI_PASSWORD);
   close(pipeDescriptor[1]);
-}
-
-void runService_VPNKeepAlive(void) {
-  // Allocate Space for Variables
-  char *ENV_VPN_KEEPALIVE = NULL;
-  unsigned int VPN_KEEPALIVE = 120;
-  unsigned int USR_KEEPALIVE = 0;
-
-  // Get Interval from Environment
-  ENV_VPN_KEEPALIVE = getenv("VPN_KEEPALIVE");
-  if (unlikely(ENV_VPN_KEEPALIVE == NULL)) {
-    printf("\033[0;31m%s\033[0m%s\n",
-           "ERROR: ", "Failed to get \"VPN_KEEPALIVE\" from the Environment");
-    exit(EXIT_FAILURE);
-  }
-  USR_KEEPALIVE = atoi(ENV_VPN_KEEPALIVE);
-  if (unlikely(USR_KEEPALIVE < VPN_KEEPALIVE)) {
-    printf("\033[0;33m%s\033[0m%s\n", "WARNING: ",
-           "\"VPN_KEEPALIVE\" is less than Minimal Value, Ignoring the Value");
-  } else {
-    VPN_KEEPALIVE = USR_KEEPALIVE;
-  }
-
-  // Keep Alive
-  printf("\033[0;32m%s\033[0m%s%u%s\n",
-         "INFO: ", "Starting Keep Alive Service with Interval of ",
-         VPN_KEEPALIVE, " Seconds");
-  fflush(stdout);
-
-  pid_t pidKeepAlive = fork();
-  if (unlikely(pidKeepAlive == -1)) {
-    printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Failed to Fork");
-    exit(EXIT_FAILURE);
-  } else if (pidKeepAlive == 0) {
-    char STRING_VPN_KEEPALIVE[0xB] = {};
-    sprintf(STRING_VPN_KEEPALIVE, "%u", VPN_KEEPALIVE);
-    fclose(stdin);
-    freopen("/dev/null", "w", stdout);
-    freopen("/dev/null", "w", stderr);
-    execl("/usr/bin/vpnKeepAlive", "vpnKeepAlive", STRING_VPN_KEEPALIVE, NULL);
-  }
 }
 
 int main(void) {
@@ -147,8 +107,6 @@ int main(void) {
   runService_Squid();
 
   runService_OpenConnect();
-
-  runService_VPNKeepAlive();
 
   // Collect Zombine Process
   while (1) {
