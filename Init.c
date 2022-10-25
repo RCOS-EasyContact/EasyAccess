@@ -105,8 +105,13 @@ void gracefully_exit(int signum) {
 }
 
 void register_signals() {
-  signal(SIGTERM, gracefully_exit);
-  signal(SIGINT,  gracefully_exit);
+  struct sigaction handle_exit = { 0 };
+  handle_exit.sa_handler = &gracefully_exit;
+  handle_exit.sa_flags = SA_NODEFER;
+  if (sigaction(SIGTERM, &handle_exit, NULL) +
+      sigaction(SIGINT , &handle_exit, NULL) < 0) {
+    printf("\033[0;31m%s\033[0%s\n", "ERROR: ", "Signal failed to be registered");
+  }
 }
 
 int main(void) {
