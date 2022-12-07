@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -97,12 +98,30 @@ void runService_OpenConnect(void) {
   close(pipeDescriptor[1]);
 }
 
+void gracefully_exit(int signum) {
+  printf("\033[0;32m%s\033[0m%s%d%s\n", "INFO: ", "Received signal ", signum, ", exiting");
+  kill(-1, SIGTERM);
+  exit(0);
+}
+
+void register_signals() {
+  struct sigaction handle_exit = { 0 };
+  handle_exit.sa_handler = &gracefully_exit;
+  handle_exit.sa_flags = SA_NODEFER;
+  if (sigaction(SIGTERM, &handle_exit, NULL) +
+      sigaction(SIGINT , &handle_exit, NULL) < 0) {
+    printf("\033[0;31m%s\033[0%s\n", "ERROR: ", "Signal failed to be registered");
+  }
+}
+
 int main(void) {
   // Refuse to Start as Non-Pid=1 Program
   if (getpid() != 1) {
     printf("\033[0;31m%s\033[0m%s\n", "ERROR: ", "Must be Run as PID 1");
     exit(EXIT_FAILURE);
   }
+
+  register_signals();
 
   runService_Squid();
 
